@@ -1,6 +1,9 @@
 package com.carusto.ReactNativePjSip;
 
 import android.app.Service;
+import android.app.Notification;
+import android.app.NotificationChannel;
+import android.app.NotificationManager;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
@@ -106,6 +109,8 @@ public class PjSipService extends Service {
     private boolean mGSMIdle;
 
     private BroadcastReceiver mPhoneStateChangedReceiver = new PhoneStateChangedReceiver();
+
+    private Notification mForegroundNotification;
 
     public PjSipBroadcastEmiter getEmitter() {
         return mEmitter;
@@ -230,6 +235,28 @@ public class PjSipService extends Service {
 
             IntentFilter phoneStateFilter = new IntentFilter(TelephonyManager.ACTION_PHONE_STATE_CHANGED);
             registerReceiver(mPhoneStateChangedReceiver, phoneStateFilter);
+            String channelId = "main";
+            CharSequence name = "ChannelName";
+            String description = "Description";
+            int importance = NotificationManager.IMPORTANCE_LOW;
+            NotificationChannel channel = new NotificationChannel(channelId, name, importance);
+            channel.setDescription(description);
+            // Register the channel with the system; you can't change the importance
+            // or other notification behaviors after this
+            NotificationManager notificationManager = getSystemService(NotificationManager.class);
+            notificationManager.createNotificationChannel(channel);
+
+
+            mForegroundNotification = new Notification.Builder(this, channelId)
+                // .setContentTitle(getText(R.string.notification_title))
+                // .setContentText(getText(R.string.notification_message))
+                // .setSmallIcon(R.drawable.icon)
+                // .setContentIntent(pendingIntent)
+                // .setTicker(getText(R.string.ticker_text))
+                .setContentTitle("Title")
+                .setContentText("Text")
+                .setSmallIcon(R.drawable.ic_foreground_notification)
+                .build();
 
             mInitialized = true;
 
@@ -714,6 +741,7 @@ public class PjSipService extends Service {
             doPauseParallelCalls(call);
 
             mEmitter.fireIntentHandled(intent);
+            startForeground(873487, mForegroundNotification);
         } catch (Exception e) {
             mEmitter.fireIntentHandled(intent, e);
         }
