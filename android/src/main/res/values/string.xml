@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="notification_title">Talke</string>
+    <string name="notification_message">Call service</string>
+    <string name="background_notif_channel_description">Call handling background service</string>
+    <string name="background_notif_channel_name">Background Service</string>
+</resources>

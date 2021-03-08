@@ -21,6 +21,8 @@ import android.os.Bundle;
 import android.telephony.TelephonyManager;
 import android.util.Log;
 
+import androidx.core.app.NotificationCompat;
+
 import com.carusto.ReactNativePjSip.dto.AccountConfigurationDTO;
 import com.carusto.ReactNativePjSip.dto.CallSettingsDTO;
 import com.carusto.ReactNativePjSip.dto.ServiceConfigurationDTO;
@@ -111,6 +113,8 @@ public class PjSipService extends Service {
     private BroadcastReceiver mPhoneStateChangedReceiver = new PhoneStateChangedReceiver();
 
     private Notification mForegroundNotification;
+
+    private static final int mForegroundNotificationId = 1;
 
     public PjSipBroadcastEmiter getEmitter() {
         return mEmitter;
@@ -235,26 +239,26 @@ public class PjSipService extends Service {
 
             IntentFilter phoneStateFilter = new IntentFilter(TelephonyManager.ACTION_PHONE_STATE_CHANGED);
             registerReceiver(mPhoneStateChangedReceiver, phoneStateFilter);
+
+            // Set up notification for foreground service
             String channelId = "main";
-            CharSequence name = "ChannelName";
-            String description = "Description";
-            int importance = NotificationManager.IMPORTANCE_LOW;
-            NotificationChannel channel = new NotificationChannel(channelId, name, importance);
-            channel.setDescription(description);
-            // Register the channel with the system; you can't change the importance
-            // or other notification behaviors after this
-            NotificationManager notificationManager = getSystemService(NotificationManager.class);
-            notificationManager.createNotificationChannel(channel);
+            // Create the NotificationChannel, but only on API 26+ because
+            // the NotificationChannel class is new and not in the support library
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                NotificationChannel channel = new NotificationChannel(channelId,
+                                                                      getText(R.string.background_notif_channel_name),
+                                                                      NotificationManager.IMPORTANCE_LOW);
+                channel.setDescription(getString(R.string.background_notif_channel_description));
+                // Register the channel with the system; you can't change the importance
+                // or other notification behaviors after this
+                NotificationManager notificationManager = getSystemService(NotificationManager.class);
+                notificationManager.createNotificationChannel(channel);
+            }
 
-
-            mForegroundNotification = new Notification.Builder(this, channelId)
-                // .setContentTitle(getText(R.string.notification_title))
-                // .setContentText(getText(R.string.notification_message))
-                // .setSmallIcon(R.drawable.icon)
-                // .setContentIntent(pendingIntent)
-                // .setTicker(getText(R.string.ticker_text))
-                .setContentTitle("Title")
-                .setContentText("Text")
+            mForegroundNotification = new NotificationCompat.Builder(this, channelId)
+                .setContentTitle(getText(R.string.notification_title))
+                .setContentText(getText(R.string.notification_message))
+                .setPriority(NotificationCompat.PRIORITY_LOW)
                 .setSmallIcon(R.drawable.ic_foreground_notification)
                 .build();
 
@@ -693,6 +697,8 @@ public class PjSipService extends Service {
 
             mCalls.add(call);
             mEmitter.fireIntentHandled(intent, call.toJson());
+
+            startForeground(mForegroundNotificationId, mForegroundNotification);
         } catch (Exception e) {
             mEmitter.fireIntentHandled(intent, e);
         }
@@ -741,7 +747,8 @@ public class PjSipService extends Service {
             doPauseParallelCalls(call);
 
             mEmitter.fireIntentHandled(intent);
-            startForeground(873487, mForegroundNotification);
+
+            startForeground(mForegroundNotificationId, mForegroundNotification);
         } catch (Exception e) {
             mEmitter.fireIntentHandled(intent, e);
         }
@@ -1073,6 +1080,9 @@ public class PjSipService extends Service {
                     mAudioManager.setSpeakerphoneOn(false);
                     mAudioManager.setMode(AudioManager.MODE_NORMAL);
                 }
+
+                // Put Service back on background state
+                stopForeground(true);
             }
         });
 
