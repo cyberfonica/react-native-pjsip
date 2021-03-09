@@ -971,28 +971,38 @@ public class PjSipService extends Service {
         }
         String ns = getApplicationContext().getPackageName();
         String cls = ns + ".MainActivity";
-        Intent fullScreenIntent = new Intent(getApplicationContext(), Class.forName(cls));
-        // Intent fullScreenIntent = new Intent(this, CallActivity.class);
-        PendingIntent fullScreenPendingIntent = PendingIntent.getActivity(getApplicationContext(), 0,
-        fullScreenIntent, PendingIntent.FLAG_UPDATE_CURRENT);
+        Log.d(TAG,"****************************************************************");
+        Log.d(TAG,"****************************************************************");
+        Log.d(TAG, "Class name for Intent: " + cls);
+        Log.d(TAG,"****************************************************************");
+        Log.d(TAG,"****************************************************************");
+        try {
+            Intent fullScreenIntent = new Intent(getApplicationContext(), Class.forName(cls));
+            // Intent fullScreenIntent = new Intent(this, CallActivity.class);
+            PendingIntent fullScreenPendingIntent = PendingIntent.getActivity(getApplicationContext(), 0,
+            fullScreenIntent, PendingIntent.FLAG_UPDATE_CURRENT);
 
-        NotificationCompat.Builder notificationBuilder =
-            new NotificationCompat.Builder(this, "main")
-            .setSmallIcon(R.drawable.ic_foreground_notification)
-            .setContentTitle("Incoming call")
-            .setContentText("(919) 555-1234")
-            .setPriority(NotificationCompat.PRIORITY_HIGH)
-            .setCategory(NotificationCompat.CATEGORY_CALL)
+            NotificationCompat.Builder notificationBuilder =
+                new NotificationCompat.Builder(this, "main")
+                .setSmallIcon(R.drawable.ic_foreground_notification)
+                .setContentTitle("Incoming call")
+                .setContentText("(919) 555-1234")
+                .setPriority(NotificationCompat.PRIORITY_HIGH)
+                .setCategory(NotificationCompat.CATEGORY_CALL)
 
-        // Use a full-screen intent only for the highest-priority alerts where you
-        // have an associated activity that you would like to launch after the user
-        // interacts with the notification. Also, if your app targets Android 10
-        // or higher, you need to request the USE_FULL_SCREEN_INTENT permission in
-        // order for the platform to invoke this notification.
-        .setFullScreenIntent(fullScreenPendingIntent, true);
+            // Use a full-screen intent only for the highest-priority alerts where you
+            // have an associated activity that you would like to launch after the user
+            // interacts with the notification. Also, if your app targets Android 10
+            // or higher, you need to request the USE_FULL_SCREEN_INTENT permission in
+            // order for the platform to invoke this notification.
+            .setFullScreenIntent(fullScreenPendingIntent, true);
 
-        Notification incomingCallNotification = notificationBuilder.build();
-        startForeground(2, incomingCallNotification);
+            Notification incomingCallNotification = notificationBuilder.build();
+
+            startForeground(2, incomingCallNotification);
+        } catch (Exception e) {
+            Log.w(TAG, "Failed to show foreground notification on received call", e);
+        }
         /**
         // Automatically start application when incoming call received.
         if (mAppHidden) {
