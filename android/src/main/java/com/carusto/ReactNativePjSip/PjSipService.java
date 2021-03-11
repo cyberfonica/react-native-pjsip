@@ -219,6 +219,7 @@ public class PjSipService extends Service {
 
     @Override
     public int onStartCommand(final Intent intent, int flags, int startId) {
+        Log.d(TAG, "onStartCommand: Starting PJSIP service with Intent: " + intent);
         if (!mInitialized) {
             if (intent != null && intent.hasExtra("service")) {
                 mServiceConfiguration = ServiceConfigurationDTO.fromMap((Map) intent.getSerializableExtra("service"));
@@ -297,6 +298,7 @@ public class PjSipService extends Service {
 
     @Override
     public void onDestroy() {
+        Log.d(TAG, "onDestroy: Destroying PJSIP service");
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR2) {
             mWorkerThread.quitSafely();
         }
