@@ -106,6 +106,24 @@ export default class Endpoint extends EventEmitter {
         });
     }
 
+    /**
+     * Returns a Promise that will be resolved once PjSip module is stopped.
+     *
+     * @returns {Promise}
+     */
+    stop() {
+        return new Promise(function(resolve, reject) {
+            NativeModules.PjSipModule.stop((successful) => {
+                if (successful) {
+                    resolve();
+                } else {
+                    reject();
+                }
+            });
+        });
+    }
+
+
     updateStunServers(accountId, stunServerList) {
         return new Promise(function(resolve, reject) {
             NativeModules.PjSipModule.updateStunServers(accountId, stunServerList, (successful, data) => {
