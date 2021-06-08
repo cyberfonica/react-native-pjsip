@@ -291,8 +291,6 @@ public class PjSipService extends Service {
             });
         }
 
-        startForeground(mForegroundNotificationId, mForegroundNotification);
-
         return START_NOT_STICKY;
     }
 
@@ -1056,6 +1054,8 @@ public class PjSipService extends Service {
                     // Acquire wifi lock
                     mWifiLock.acquire();
 
+                    startForeground(mForegroundNotificationId, mForegroundNotification);
+
                     if (callState == pjsip_inv_state.PJSIP_INV_STATE_EARLY || callState == pjsip_inv_state.PJSIP_INV_STATE_CONFIRMED) {
                         mAudioManager.setMode(AudioManager.MODE_IN_CALL);
                     }
@@ -1084,6 +1084,10 @@ public class PjSipService extends Service {
                 // Release wifi lock
                 if (mCalls.size() == 1) {
                     mWifiLock.release();
+                }
+
+                if (mCalls.size() == 1) {
+                    stopForeground(true);
                 }
 
                 // Reset audio settings
