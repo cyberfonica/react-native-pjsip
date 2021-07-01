@@ -312,6 +312,7 @@ public class PjSipService extends Service {
         unregisterReceiver(mPhoneStateChangedReceiver);
 
         super.onDestroy();
+        android.os.Process.killProcess(android.os.Process.myPid());
     }
 
     private void job(Runnable job) {
